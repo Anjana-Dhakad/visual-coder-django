@@ -1,0 +1,319 @@
+/* ========= GOOGLE FONT & CSS VARIABLES ========= */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Fira+Code&display=swap');
+
+:root {
+  --bg-dark: #1e2127;
+  --bg-panel: #282c34;
+  --bg-canvas: #16181d;
+  --primary-accent: #61dafb; /* React blue */
+  --secondary-accent: #2ecc71; /* Green */
+  --danger-accent: #e74c3c; /* Red */
+  --text-light: #f0f2f5;
+  --text-medium: #abb2bf;
+  --border-color: #4b5263;
+  --font-primary: 'Poppins', sans-serif;
+  --font-code: 'Fira Code', monospace;
+}
+
+/* ========= GLOBAL & LAYOUT STYLES ========= */
+body {
+  margin: 0;
+  font-family: var(--font-primary);
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+.reactflow-wrapper {
+  flex-grow: 1;
+  height: 100%;
+  background-color: var(--bg-canvas);
+}
+
+.back-link {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  background: var(--bg-panel);
+  padding: 8px 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--primary-accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+.back-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  color: white;
+}
+
+/* ========= UNIVERSAL PANEL & BUTTON STYLES ========= */
+.panel {
+  width: 280px;
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  padding-top: 80px; /* Space for Back-Link */
+  border-right: 1px solid var(--border-color);
+  box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+  z-index: 5;
+}
+
+.panel-button {
+  width: 100%;
+  padding: 12px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: var(--font-primary);
+  transition: all 0.2s ease;
+}
+.panel-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* ========= SIDEBAR (Flowchart to Code) ========= */
+aside {
+  width: 250px;
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  padding-top: 80px;
+  border-right: 1px solid var(--border-color);
+  box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+  z-index: 5;
+}
+
+.dndnode {
+  padding: 15px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: grab;
+  background: var(--bg-dark);
+  color: var(--text-medium);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.dndnode:hover {
+  border-color: var(--primary-accent);
+  color: var(--primary-accent);
+  transform: translateY(-2px);
+}
+.dndnode:active { cursor: grabbing; }
+
+.clear-button {
+  margin-top: auto;
+  background-color: var(--danger-accent);
+}
+.clear-button:hover { background-color: #c0392b; }
+
+/* ========= CODE PANELS ========= */
+.code-output-panel {
+  width: 35%;
+  max-width: 450px;
+  background: var(--bg-dark);
+  color: var(--text-medium);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-left: 1px solid var(--border-color);
+}
+.code-output-panel h3 {
+  margin: 0 0 15px 0;
+  text-align: center;
+  color: var(--primary-accent);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 15px;
+  font-weight: 600;
+}
+.code-display {
+  flex-grow: 1;
+  background-color: var(--bg-panel);
+  border-radius: 8px;
+  padding: 15px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-y: auto;
+  font-family: var(--font-code);
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+}
+.generate-button-bottom {
+  margin-top: 20px;
+  background-color: var(--secondary-accent);
+}
+.generate-button-bottom:hover { background-color: #27ae60; }
+
+
+.code-editor-panel {
+  width: 30%;
+  min-width: 350px;
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  padding-top: 80px;
+  border-right: 1px solid var(--border-color);
+  box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+  z-index: 5;
+}
+.code-editor-panel h3 {
+  margin: 0 0 15px 0;
+  color: var(--primary-accent);
+  font-weight: 600;
+}
+.code-editor-panel textarea {
+  flex-grow: 1; 
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-family: var(--font-code);
+  font-size: 14px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+.code-editor-panel button {
+  background-color: var(--secondary-accent);
+}
+.code-editor-panel button:hover { background-color: #218838; }
+
+
+/* ========= CUSTOM NODE STYLES (NEW DESIGN) ========= */
+.react-flow__node {
+  transition: all 0.2s ease;
+}
+.react-flow__node:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 25px rgba(97, 218, 251, 0.3);
+}
+
+.react-flow__node-startEnd,
+.react-flow__node-inputOutput,
+.react-flow__node-decision {
+  width: 200px;
+  height: 80px;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-width: 2px;
+  border-style: solid;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-light);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.react-flow__node-startEnd {
+  border-radius: 50px;
+  background: #2c5b6b;
+  border-color: var(--secondary-accent);
+}
+.react-flow__node-inputOutput {
+  background: #3a4f7a;
+  border-color: var(--primary-accent);
+  clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%);
+}
+.react-flow__node-decision {
+  width: 160px;
+  height: 160px;
+  background: #7a3a4f;
+  border-color: var(--danger-accent);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.react-flow__handle {
+  width: 10px !important;
+  height: 10px !important;
+  background: var(--primary-accent) !important;
+  border: 2px solid var(--bg-dark) !important;
+}
+.react-flow__edge-path {
+  stroke: var(--text-medium) !important;
+  stroke-width: 2 !important;
+}
+.react-flow__arrowhead path {
+  fill: var(--text-medium) !important;
+}
+
+/* ========= HOME PAGE STYLES (NEW) ========= */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  padding: 20px;
+  background-color: var(--bg-dark);
+}
+
+.home-container h1 {
+  font-size: 3.5rem;
+  color: var(--text-light);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.home-container .subtitle {
+  font-size: 1.2rem;
+  color: var(--text-medium);
+  margin-bottom: 50px;
+}
+
+.card-container {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap; /* Allows cards to stack on smaller screens */
+}
+
+.option-card {
+  background: var(--bg-panel);
+  width: 300px;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  text-decoration: none;
+  color: var(--text-light);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.option-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(97, 218, 251, 0.2); /* React blue glow */
+  border-color: var(--primary-accent);
+}
+
+.option-card h3 {
+  font-size: 1.5rem;
+  color: var(--primary-accent);
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.option-card p {
+  font-size: 1rem;
+  color: var(--text-medium);
+  line-height: 1.6;
+}
