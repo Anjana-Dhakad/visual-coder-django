@@ -1,0 +1,4 @@
+Django==5.2.6
+setuptools==65.5.0
+tree_sitter_c==0.24.1
+wheel==0.45.1
