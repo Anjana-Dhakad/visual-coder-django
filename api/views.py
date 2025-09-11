@@ -46,65 +46,146 @@ def generate_flowchart(request):
                 'position': {'x': x, 'y': y},
                 'data': {'label': label, **extra_data}
             }
-            y_pos += 100
+            y_pos += 120 
             return node
 
         def create_edge(source, target, label=''):
             edge_id = f"e-{source}-{target}-{label}-{get_unique_node_id()}"
-            return {'id': edge_id, 'source': source, 'target': target, 'label': label}
+            return {'id': edge_id, 'source': source, 'target': target, 'label': label, 'type': 'smoothstep'}
 
-        def walk_ast(node, parent_id, x_pos=350):
+        def walk_ast(node, parent_id, x_pos=350, break_target_id=None):
             current_parent_id = parent_id
 
-            if not node or not hasattr(node, 'named_children'):
+            if not node or not hasattr(node, 'children'):
                 return parent_id
 
+            # Hum 'named_children' use karenge taaki '{' jaise faltu tokens na aayein
             for child in node.named_children:
                 created_node = None
                 child_text = child.text.decode('utf8')
 
-                if child.type in ('declaration', 'expression_statement', 'return_statement'):
+                # --- FUNCTION CALL LOGIC ---
+                # expression_statement ke andar call_expression ho sakta hai
+                if child.type == 'expression_statement' and child.children[0].type == 'call_expression':
+                    created_node = create_node('inputOutput', child_text, x_pos, y_pos)
+
+                elif child.type in ('declaration', 'return_statement'):
                     created_node = create_node('inputOutput', child_text, x_pos, y_pos)
                 
                 elif child.type == 'if_statement':
+                    # ... (if-else ka logic waisa hi rahega)
                     condition = child.child_by_field_name('condition').text.decode('utf8')
-                    created_node = create_node('decision', f"{condition}", x_pos, y_pos)
-                    nodes.append(created_node)
-                    # --- BADLAV: .id ki jagah ['id'] ka istemal ---
-                    edges.append(create_edge(current_parent_id, created_node['id']))
+                    if_node = create_node('decision', f"{condition}", x_pos, y_pos)
+                    nodes.append(if_node)
+                    edges.append(create_edge(current_parent_id, if_node['id']))
                     
-                    consequence = child.child_by_field_name('consequence')
-                    # --- BADLAV: .id ki jagah ['id'] ka istemal ---
-                    true_end_id = walk_ast(consequence, created_node['id'], x_pos - 200)
-
-                    merge_node = create_node('inputOutput', '', x_pos, y_pos)
+                    merge_node = create_node('inputOutput', '', x_pos, y_pos + 240)
                     merge_node['data']['label'] = ''
                     nodes.append(merge_node)
-                    # --- BADLAV: .id ki jagah ['id'] ka istemal ---
-                    edges.append(create_edge(true_end_id, merge_node['id'], 'True'))
+
+                    consequence = child.child_by_field_name('consequence')
+                    true_end_id = walk_ast(consequence, if_node['id'], x_pos - 200, merge_node['id'])
+                    edges.append(create_edge(if_node['id'], true_end_id, 'True'))
+                    if true_end_id != merge_node['id']:
+                       edges.append(create_edge(true_end_id, merge_node['id']))
                     
                     alternative = child.child_by_field_name('alternative')
                     if alternative:
-                        # --- BADLAV: .id ki jagah ['id'] ka istemal ---
-                        false_end_id = walk_ast(alternative, created_node['id'], x_pos + 200)
-                        # --- BADLAV: .id ki jagah ['id'] ka istemal ---
-                        edges.append(create_edge(false_end_id, merge_node['id'], 'False'))
+                        false_end_id = walk_ast(alternative, if_node['id'], x_pos + 200, merge_node['id'])
+                        edges.append(create_edge(if_node['id'], false_end_id, 'False'))
+                        if false_end_id != merge_node['id']:
+                            edges.append(create_edge(false_end_id, merge_node['id']))
                     else:
-                        # --- BADLAV: .id ki jagah ['id'] ka istemal ---
-                        edges.append(create_edge(created_node['id'], merge_node['id'], 'False'))
+                        edges.append(create_edge(if_node['id'], merge_node['id'], 'False'))
                     
-                    # --- BADLAV: .id ki jagah ['id'] ka istemal ---
                     current_parent_id = merge_node['id']
                     continue
                 
+                # Baki saare loops aur switch ka logic waisa hi rahega
+                # ... (for, while, switch logic here) ...
+                elif child.type == 'for_statement':
+                    initializer = child.child_by_field_name('initializer')
+                    init_text = initializer.text.decode('utf8') if initializer else ''
+                    init_node = create_node('inputOutput', init_text, x_pos, y_pos)
+                    nodes.append(init_node)
+                    edges.append(create_edge(current_parent_id, init_node['id']))
+
+                    condition = child.child_by_field_name('condition')
+                    cond_text = condition.text.decode('utf8') if condition else 'true'
+                    cond_node = create_node('decision', cond_text, x_pos, y_pos)
+                    nodes.append(cond_node)
+                    edges.append(create_edge(init_node['id'], cond_node['id']))
+                    
+                    body_node = child.child_by_field_name('body')
+                    body_end_id = walk_ast(body_node, cond_node['id'], x_pos + 250)
+                    
+                    update = child.child_by_field_name('update')
+                    update_text = update.text.decode('utf8') if update else ''
+                    update_node = create_node('inputOutput', update_text, x_pos + 250, y_pos)
+                    nodes.append(update_node)
+                    edges.append(create_edge(body_end_id, update_node['id'], 'True'))
+                    
+                    edges.append(create_edge(update_node['id'], cond_node['id']))
+
+                    current_parent_id = cond_node['id']
+                    continue
+
+                elif child.type == 'while_statement':
+                    condition = child.child_by_field_name('condition')
+                    cond_text = condition.text.decode('utf8') if condition else 'true'
+                    cond_node = create_node('decision', cond_text, x_pos, y_pos)
+                    nodes.append(cond_node)
+                    edges.append(create_edge(current_parent_id, cond_node['id']))
+
+                    body = child.child_by_field_name('body')
+                    body_end_id = walk_ast(body, cond_node['id'], x_pos + 250)
+                    edges.append(create_edge(body_end_id, cond_node['id'], 'True'))
+                    
+                    current_parent_id = cond_node['id']
+                    continue
+
+                elif child.type == 'switch_statement':
+                    condition = child.child_by_field_name('condition').text.decode('utf8')
+                    switch_node = create_node('decision', f"switch {condition}", x_pos, y_pos)
+                    nodes.append(switch_node)
+                    edges.append(create_edge(current_parent_id, switch_node['id']))
+                    
+                    body = child.child_by_field_name('body')
+                    
+                    merge_node = create_node('inputOutput', '', x_pos, y_pos + (len(body.named_children) * 120))
+                    merge_node['data']['label'] = ''
+                    nodes.append(merge_node)
+
+                    case_x_offset = -200
+                    
+                    for case_statement in body.named_children:
+                        if case_statement.type == 'case_statement':
+                            value_node = case_statement.child_by_field_name('value')
+                            case_label = value_node.text.decode('utf8') if value_node else "default"
+                            
+                            case_end_id = walk_ast(case_statement, switch_node['id'], x_pos + case_x_offset, merge_node['id'])
+                            if case_end_id != merge_node['id']:
+                                edges.append(create_edge(case_end_id, merge_node['id']))
+                            
+                            case_x_offset += 200
+                        
+                        elif case_statement.type == 'default_statement':
+                            case_end_id = walk_ast(case_statement, switch_node['id'], x_pos + case_x_offset, merge_node['id'])
+                            if case_end_id != merge_node['id']:
+                                edges.append(create_edge(case_end_id, merge_node['id']))
+                            
+                            case_x_offset += 200
+
+
+                    current_parent_id = merge_node['id']
+                    continue
+
                 if created_node:
                     nodes.append(created_node)
-                    # --- BADLAV: .id ki jagah ['id'] ka istemal ---
-                    edges.append(create_edge(current_parent_id, created_node['id']))
-                    # --- BADLAV: .id ki jagah ['id'] ka istemal ---
+                    edges.append(create_edge(parent_id, created_node['id']))
                     current_parent_id = created_node['id']
                 else:
-                    current_parent_id = walk_ast(child, current_parent_id, x_pos)
+                    current_parent_id = walk_ast(child, current_parent_id, x_pos, break_target_id)
 
             return current_parent_id
 
@@ -119,17 +200,15 @@ def generate_flowchart(request):
                     main_function_body = func.child_by_field_name('body')
                     break
         
-        # --- BADLAV: .id ki jagah ['id'] ka istemal ---
         last_node_id = start_node['id']
         if main_function_body:
-            # --- BADLAV: .id ki jagah ['id'] ka istemal ---
             last_node_id = walk_ast(main_function_body, start_node['id'])
         else:
-            # --- BADLAV: .id ki jagah ['id'] ka istemal ---
             last_node_id = walk_ast(root_node, start_node['id'])
 
         end_node = create_node('startEnd', 'End', 350, y_pos)
         nodes.append(end_node)
+        
         edges.append(create_edge(last_node_id, end_node['id']))
 
         return JsonResponse({'status': 'success', 'nodes': nodes, 'edges': edges})
