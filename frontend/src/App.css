@@ -85,48 +85,120 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-/* ========= SIDEBAR (Flowchart to Code) ========= */
-aside {
+/* ========= SIDEBAR (Flowchart to Code) - UPDATED ========= */
+aside.sidebar {
   width: 250px;
   background: var(--bg-panel);
   display: flex;
   flex-direction: column;
   padding: 20px;
-  padding-top: 80px;
   border-right: 1px solid var(--border-color);
   box-shadow: 4px 0 15px rgba(0,0,0,0.2);
   z-index: 5;
 }
 
-.dndnode {
-  padding: 15px;
-  border: 1px dashed var(--border-color);
+.sidebar-header {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nodes-container {
+    flex-grow: 1;
+}
+
+.dnd-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 10px;
+  cursor: grab;
+  background: #374151;
   border-radius: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
+  transition: background 0.2s ease;
+  color: #d1d5db;
+  font-weight: 500;
+}
+
+.dnd-node:hover {
+  background: #4b5563;
+}
+
+.node-label {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.node-shape {
+  height: 40px;
+  width: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: grab;
-  background: var(--bg-dark);
-  color: var(--text-medium);
-  font-weight: 500;
-  transition: all 0.2s ease;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
 }
-.dndnode:hover {
-  border-color: var(--primary-accent);
-  color: var(--primary-accent);
-  transform: translateY(-2px);
-}
-.dndnode:active { cursor: grabbing; }
 
-.clear-button {
-  margin-top: auto;
-  background-color: var(--danger-accent);
+.shape-start-end {
+  background: #10b981;
+  border-radius: 20px;
+  border: 1px solid #059669;
 }
-.clear-button:hover { background-color: #c0392b; }
+
+.shape-input-output {
+  background: #3b82f6;
+  border: 1px solid #2563eb;
+  clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%);
+}
+
+.shape-decision {
+  background: #ef4444;
+  border: 1px solid #dc2626;
+  transform: rotate(45deg);
+  width: 40px;
+}
+
+.shape-decision span {
+  transform: rotate(-45deg);
+}
+
+.shape-for-loop {
+  background: #a855f7;
+  border: 1px solid #9333ea;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+/* Clear Canvas Button */
+.clear-btn-wrapper {
+  padding: 10px 0 0 0; /* No horizontal padding */
+  margin-top: auto; /* Pushes button to the bottom */
+}
+
+.clear-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--danger-accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.clear-btn:hover {
+  background-color: #c0392b;
+}
+
 
 /* ========= CODE PANELS ========= */
-.code-output-panel {
+.code-output-panel, .code-panel {
   width: 35%;
   max-width: 450px;
   background: var(--bg-dark);
@@ -136,7 +208,7 @@ aside {
   padding: 20px;
   border-left: 1px solid var(--border-color);
 }
-.code-output-panel h3 {
+.code-output-panel h3, .code-panel h3 {
   margin: 0 0 15px 0;
   text-align: center;
   color: var(--primary-accent);
@@ -144,7 +216,7 @@ aside {
   padding-bottom: 15px;
   font-weight: 600;
 }
-.code-display {
+.code-display, .code-output pre {
   flex-grow: 1;
   background-color: var(--bg-panel);
   border-radius: 8px;
@@ -156,11 +228,11 @@ aside {
   font-size: 14px;
   border: 1px solid var(--border-color);
 }
-.generate-button-bottom {
+.generate-button-bottom, .generate-btn {
   margin-top: 20px;
   background-color: var(--secondary-accent);
 }
-.generate-button-bottom:hover { background-color: #27ae60; }
+.generate-button-bottom:hover, .generate-btn:hover { background-color: #27ae60; }
 
 
 .code-editor-panel {
@@ -197,7 +269,7 @@ aside {
 .code-editor-panel button:hover { background-color: #218838; }
 
 
-/* ========= CUSTOM NODE STYLES (NEW DESIGN) ========= */
+/* ========= CUSTOM NODE STYLES (EXISTING) ========= */
 .react-flow__node {
   transition: all 0.2s ease;
 }
@@ -208,9 +280,8 @@ aside {
 
 .react-flow__node-startEnd,
 .react-flow__node-inputOutput,
-.react-flow__node-decision {
-  width: 200px;
-  height: 80px;
+.react-flow__node-decision,
+.react-flow__node-for-loop {
   padding: 10px;
   box-sizing: border-box;
   display: flex;
@@ -224,12 +295,25 @@ aside {
   color: var(--text-light);
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
+
+.react-flow__node-for-loop {
+  width: 200px;
+  height: 80px;
+  background: #6d28d9;
+  border-color: #a855f7;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
 .react-flow__node-startEnd {
+  width: 200px;
+  height: 80px;
   border-radius: 50px;
   background: #2c5b6b;
   border-color: var(--secondary-accent);
 }
 .react-flow__node-inputOutput {
+  width: 200px;
+  height: 80px;
   background: #3a4f7a;
   border-color: var(--primary-accent);
   clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%);
@@ -255,7 +339,7 @@ aside {
   fill: var(--text-medium) !important;
 }
 
-/* ========= HOME PAGE STYLES (NEW) ========= */
+/* ========= HOME PAGE STYLES (EXISTING) ========= */
 .home-container {
   display: flex;
   flex-direction: column;
@@ -317,3 +401,174 @@ aside {
   color: var(--text-medium);
   line-height: 1.6;
 }
+
+
+/* ========= GOOGLE FONT & CSS VARIABLES ========= */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Fira+Code&display=swap');
+
+:root {
+  --bg-dark: #1e2127;
+  --bg-panel: #282c34;
+  --bg-canvas: #16181d;
+  --primary-accent: #61dafb; /* React blue */
+  --secondary-accent: #2ecc71; /* Green */
+  --danger-accent: #e74c3c; /* Red */
+  --warning-accent: #f39c12; /* Orange for highlight */
+  --text-light: #f0f2f5;
+  --text-medium: #abb2bf;
+  --border-color: #4b5263;
+  --font-primary: 'Poppins', sans-serif;
+  --font-code: 'Fira Code', monospace;
+}
+
+/* ... (aapka baaki saara CSS code yahan waisa hi rahega) ... */
+
+/* PASTE THE FOLLOWING AT THE VERY END OF YOUR App.css FILE */
+
+/* ========= VISUALIZATION STYLES ========= */
+
+.visualization-panel {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-panel);
+  padding: 10px 15px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 10;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+}
+
+.vis-button {
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vis-button.run {
+  background-color: var(--secondary-accent);
+  color: white;
+}
+.vis-button.run:hover {
+  background-color: #27ae60;
+}
+.vis-button.run:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.vis-button.next {
+  background-color: var(--primary-accent);
+  color: var(--bg-dark);
+}
+.vis-button.next:hover {
+  background-color: #88eaff;
+}
+
+.vis-button.reset {
+  background-color: var(--danger-accent);
+  color: white;
+}
+.vis-button.reset:hover {
+  background-color: #c0392b;
+}
+
+.state-panels-container {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  width: 250px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.state-panel {
+  background: var(--bg-panel);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+}
+
+.state-panel h4 {
+  margin: 0;
+  padding: 10px 15px;
+  color: var(--primary-accent);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.state-panel-content {
+  padding: 15px;
+  font-family: var(--font-code);
+  font-size: 14px;
+  min-height: 100px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.state-panel-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* Style for the currently executing node */
+.node-highlighted .react-flow__node {
+    border-color: var(--warning-accent) !important;
+    border-width: 3px !important;
+    box-shadow: 0 0 25px rgba(243, 156, 18, 0.7) !important;
+}
+
+
+/* ... (aapke purane styles) ... */
+
+/* Buttons ko side-by-side align karne ke liye naya style */
+.button-group {
+  display: flex;
+  gap: 10px; /* Buttons ke beech mein thoda space */
+  margin-top: 10px;
+}
+
+/* Dono buttons ko barabar space dene ke liye */
+.button-group .panel-button {
+  flex: 1; /* Dono buttons ko barabar width dega */
+  margin: 0; /* Extra margin hata dega */
+}
+
+/* Buttons ke text aur design ko behtar karne ke liye */
+.panel-button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.8em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.panel-button.generate {
+  background-color: #3498db; /* Blue */
+  color: white;
+}
+
+.panel-button.clear {
+  background-color: #3498db; /* Blue */
+  color: white;
+}
+
+.panel-button:hover {
+  opacity: 0.9;
+}
+
