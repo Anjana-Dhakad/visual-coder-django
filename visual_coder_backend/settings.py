@@ -28,7 +28,7 @@ DEBUG = False
 
 # visual_coder_backend/settings.py
 
-ALLOWED_HOSTS = ['your-project-name.vercel.app', '127.0.0.1']
+ALLOWED_HOSTS = ['visual-coder-django.vercel.app', '.vercel.app']
 
 # Application definition
 
