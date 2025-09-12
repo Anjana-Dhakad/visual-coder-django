@@ -47,7 +47,6 @@ const FlowchartToCodePageContent = () => {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [generatedCode, setGeneratedCode] = useState(initialCode);
 
-  // --- NEW: Function to clear the canvas ---
   const handleClearCanvas = () => {
     setNodes([]);
     setEdges([]);
@@ -76,6 +75,7 @@ const FlowchartToCodePageContent = () => {
       };
       setEdges((eds) => addEdge(newEdge, eds));
     },
+    // No change here, your dependencies were already correct
     [setEdges, nodes, edges]
   );
 
@@ -116,7 +116,8 @@ const FlowchartToCodePageContent = () => {
       const newNode = { id: getId(), type, position, data: { label } };
       setNodes((nds) => nds.concat(newNode));
     },
-    [reactFlowInstance, nodes]
+    // FIX: Added 'setNodes' to the dependency array to fix the warning
+    [reactFlowInstance, nodes, setNodes]
   );
   
   const onNodeDoubleClick = useCallback((event, node) => {
@@ -134,7 +135,7 @@ const FlowchartToCodePageContent = () => {
   }, [setNodes]);
 
   const handleGenerateCode = () => {
-    // ... (handleGenerateCode ka poora logic waisa hi rahega, usmein koi badlav nahi)
+    // Your code generation logic is exactly the same. No changes made here.
     const startNode = nodes.find(n => n.data.label.toLowerCase() === 'start');
     if (!startNode) {
       setGeneratedCode('// Error: "Start" node not found!');
@@ -280,7 +281,6 @@ const FlowchartToCodePageContent = () => {
     <div className="app-container">
       <Link to="/" className="back-link">← Back to Home</Link>
       
-      {/* Pass the clear function to the Sidebar */}
       <Sidebar onClear={handleClearCanvas} />
 
       <div className="reactflow-wrapper" ref={reactFlowWrapper}>
