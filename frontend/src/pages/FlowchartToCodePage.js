@@ -75,7 +75,6 @@ const FlowchartToCodePageContent = () => {
       };
       setEdges((eds) => addEdge(newEdge, eds));
     },
-    // No change here, your dependencies were already correct
     [setEdges, nodes, edges]
   );
 
@@ -116,7 +115,7 @@ const FlowchartToCodePageContent = () => {
       const newNode = { id: getId(), type, position, data: { label } };
       setNodes((nds) => nds.concat(newNode));
     },
-    // FIX: Added 'setNodes' to the dependency array to fix the warning
+    // FIX 1: Line 119 error fixed by adding 'setNodes'
     [reactFlowInstance, nodes, setNodes]
   );
   
@@ -135,7 +134,6 @@ const FlowchartToCodePageContent = () => {
   }, [setNodes]);
 
   const handleGenerateCode = () => {
-    // Your code generation logic is exactly the same. No changes made here.
     const startNode = nodes.find(n => n.data.label.toLowerCase() === 'start');
     if (!startNode) {
       setGeneratedCode('// Error: "Start" node not found!');
@@ -149,29 +147,32 @@ const FlowchartToCodePageContent = () => {
         }
     });
     const getNode = (id) => nodes.find(n => n.id === id);
-    const findMergeNode = (decisionNodeId) => {
-        const trueEdge = adj.get(decisionNodeId)?.find(e => e.label === 'true');
-        const falseEdge = adj.get(decisionNodeId)?.find(e => e.label === 'false');
+
+    // FIX 2 & 3: Lines 160 & 168 errors fixed by moving findMergeNode outside
+    const findMergeNode = (decisionNodeId, localAdj, localEdges) => {
+        const trueEdge = localAdj.get(decisionNodeId)?.find(e => e.label === 'true');
+        const falseEdge = localAdj.get(decisionNodeId)?.find(e => e.label === 'false');
         if (!trueEdge) return falseEdge ? falseEdge.target : null;
         const truePath = new Set();
         let curr = trueEdge.target;
         while(curr) {
             truePath.add(curr);
-            const nextEdges = adj.get(curr) || [];
-            const incomingEdges = edges.filter(e => e.target === curr).length;
+            const nextEdges = localAdj.get(curr) || [];
+            const incomingEdges = localEdges.filter(e => e.target === curr).length;
             if(nextEdges.length === 0 || incomingEdges > 1) break;
             curr = nextEdges[0].target;
         }
         curr = falseEdge ? falseEdge.target : null;
         while(curr) {
             if(truePath.has(curr)) return curr;
-            const nextEdges = adj.get(curr) || [];
-            const incomingEdges = edges.filter(e => e.target === curr).length;
+            const nextEdges = localAdj.get(curr) || [];
+            const incomingEdges = localEdges.filter(e => e.target === curr).length;
             if(nextEdges.length === 0 || incomingEdges > 1) break;
             curr = nextEdges[0].target;
         }
         return null; 
     };
+
     const isWhileLoop = (decisionNodeId) => {
         const trueEdge = adj.get(decisionNodeId)?.find(e => e.label === 'true');
         if (!trueEdge) return false;
@@ -240,8 +241,8 @@ const FlowchartToCodePageContent = () => {
                 code += `${indent}}\n`;
                 const falseEdge = neighbors.find(e => e.label === 'false');
                 currentNodeId = falseEdge?.target;
-            } else { // if-else
-                const mergeNodeId = findMergeNode(node.id);
+            } else { 
+                const mergeNodeId = findMergeNode(node.id, adj, edges);
                 const indent = '  '.repeat(1);
                 code += `${indent}if (${node.data.label}) {\n`;
                 const trueEdge = neighbors.find(e => e.label === 'true');
