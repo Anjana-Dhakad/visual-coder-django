@@ -24,10 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$hv)jpz^osq%!g3(wwhtqk4by4%l$#eur)@!asy*-ztns)@2^u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+# visual_coder_backend/settings.py
 
+ALLOWED_HOSTS = ['your-project-name.vercel.app', '127.0.0.1']
 
 # Application definition
 
@@ -137,11 +138,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # visual_coder_backend/settings.py (file ke aakhir mein)
 
-STATICFILES_DIRS = [
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'build', 'static'),
-    BASE_DIR / 'frontend/build/static',
-]
+# visual_coder_backend/settings.py (file ke aakhir mein)
 
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend/build/static')
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [
