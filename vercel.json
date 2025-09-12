@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "visual_coder_django/wsgi.py",
@@ -8,19 +9,21 @@
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
+      "config": { "distDir": "build" }
     }
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "visual_coder_django/wsgi.py"
+    },
+    {
       "src": "/static/(.*)",
-      "dest": "/frontend/build/static/$1"
+      "dest": "/build/static/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "visual_coder_django/wsgi.py"
+      "dest": "/build/$1"
     }
   ]
 }
