@@ -64,8 +64,12 @@ int main() {
     setNodes([]);
     setEdges([]);
 
+    // --- YEH LINE UPDATE KI GAYI HAI ---
+    // Apna Render backend URL yahan daalein
+    const API_URL = "https://visual-coder-backend.onrender.com/api/generate-flowchart/";
+
     try {
-      const response = await fetch('/api/generate-flowchart/', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: code }),
