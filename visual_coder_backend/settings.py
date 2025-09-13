@@ -84,7 +84,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://visual-coder-django.vercel.app/" # Apna Vercel URL
+    "https://visual-coder-django.vercel.app"  # No trailing slash!
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
