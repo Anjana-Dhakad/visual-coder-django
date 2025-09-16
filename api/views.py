@@ -14,6 +14,264 @@ def get_unique_node_id():
     return res
 
 @csrf_exempt
+def generate_code_from_flowchart(request):
+    """
+    Generate C code from flowchart data (react-flow nodes and edges).
+    Expects JSON payload with 'nodes' and 'edges' arrays.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        nodes = data.get('nodes', [])
+        edges = data.get('edges', [])
+        
+        if not nodes:
+            return JsonResponse({'status': 'error', 'message': 'No nodes provided'}, status=400)
+        
+        # Find the Start node
+        start_node = None
+        for node in nodes:
+            if node.get('data', {}).get('label', '').lower() == 'start':
+                start_node = node
+                break
+        
+        if not start_node:
+            return JsonResponse({'code': '// Error: "Start" node not found!'})
+        
+        # Build adjacency list
+        adj = {}
+        for node in nodes:
+            adj[node['id']] = []
+        
+        for edge in edges:
+            if edge['source'] in adj:
+                adj[edge['source']].append({
+                    'target': edge['target'],
+                    'label': edge.get('label', '')
+                })
+        
+        def get_node(node_id):
+            for node in nodes:
+                if node['id'] == node_id:
+                    return node
+            return None
+        
+        def format_statement(label, indentation):
+            indent = '  ' * indentation
+            trimmed_label = label.strip()
+            if not trimmed_label:
+                return ''
+            if trimmed_label.endswith(';') or trimmed_label.endswith('{') or trimmed_label.endswith('}'):
+                return f"{indent}{trimmed_label}\n"
+            return f"{indent}{trimmed_label};\n"
+        
+        def find_merge_node(decision_node_id, local_adj, local_edges):
+            """Find the merge point for if-else branches"""
+            decision_neighbors = local_adj.get(decision_node_id, [])
+            true_edge = None
+            false_edge = None
+            
+            for edge in decision_neighbors:
+                if edge['label'].lower() == 'true':
+                    true_edge = edge
+                elif edge['label'].lower() == 'false':
+                    false_edge = edge
+            
+            if not true_edge:
+                return false_edge['target'] if false_edge else None
+            
+            # Follow true path and collect all nodes
+            true_path = set()
+            curr = true_edge['target']
+            while curr:
+                true_path.add(curr)
+                next_edges = local_adj.get(curr, [])
+                incoming_edges = [e for e in local_edges if e['target'] == curr]
+                if len(next_edges) == 0 or len(incoming_edges) > 1:
+                    break
+                curr = next_edges[0]['target']
+            
+            # Follow false path and find first intersection with true path
+            curr = false_edge['target'] if false_edge else None
+            while curr:
+                if curr in true_path:
+                    return curr
+                next_edges = local_adj.get(curr, [])
+                incoming_edges = [e for e in local_edges if e['target'] == curr]
+                if len(next_edges) == 0 or len(incoming_edges) > 1:
+                    break
+                curr = next_edges[0]['target']
+            
+            return None
+        
+        def is_while_loop(decision_node_id):
+            """Check if a decision node is part of a while loop"""
+            decision_neighbors = adj.get(decision_node_id, [])
+            true_edge = None
+            
+            for edge in decision_neighbors:
+                if edge['label'].lower() == 'true':
+                    true_edge = edge
+                    break
+            
+            if not true_edge:
+                return False
+            
+            # Follow the true path and see if it loops back to the decision node
+            current_node_id = true_edge['target']
+            path = set()
+            
+            while current_node_id and current_node_id not in path:
+                path.add(current_node_id)
+                if current_node_id == decision_node_id:
+                    return True
+                neighbors = adj.get(current_node_id, [])
+                if len(neighbors) != 1:
+                    return False
+                current_node_id = neighbors[0]['target']
+            
+            return False
+        
+        # Generate C code
+        code = '#include <stdio.h>\n\nint main() {\n'
+        current_node_id = start_node['id']
+        visited = set()
+        
+        while current_node_id and current_node_id not in visited:
+            visited.add(current_node_id)
+            node = get_node(current_node_id)
+            
+            if not node or node.get('data', {}).get('label', '').lower() == 'end':
+                break
+            
+            neighbors = adj.get(node['id'], [])
+            node_type = node.get('type', '')
+            node_label = node.get('data', {}).get('label', '')
+            
+            if node_type == 'startEnd' and node_label.lower() == 'start':
+                current_node_id = neighbors[0]['target'] if neighbors else None
+            
+            elif node_type == 'inputOutput':
+                code += format_statement(node_label, 1)
+                current_node_id = neighbors[0]['target'] if neighbors else None
+            
+            elif node_type == 'forLoop':
+                indent = '  '
+                code += f"{indent}for ({node_label}) {{\n"
+                
+                # Find true and false edges
+                true_edge = None
+                false_edge = None
+                for edge in neighbors:
+                    if edge['label'].lower() == 'true':
+                        true_edge = edge
+                    elif edge['label'].lower() == 'false':
+                        false_edge = edge
+                
+                # Process loop body
+                if true_edge:
+                    body_node_id = true_edge['target']
+                    loop_exit_id = false_edge['target'] if false_edge else None
+                    loop_body_path = set()
+                    
+                    while (body_node_id and body_node_id != node['id'] and 
+                           body_node_id != loop_exit_id and body_node_id not in loop_body_path):
+                        loop_body_path.add(body_node_id)
+                        body_node = get_node(body_node_id)
+                        if body_node:
+                            code += format_statement(body_node.get('data', {}).get('label', ''), 2)
+                        
+                        body_neighbors = adj.get(body_node_id, [])
+                        body_node_id = body_neighbors[0]['target'] if body_neighbors else None
+                
+                code += f"{indent}}}\n"
+                current_node_id = false_edge['target'] if false_edge else None
+            
+            elif node_type == 'decision':
+                if is_while_loop(node['id']):
+                    # Handle while loop
+                    indent = '  '
+                    code += f"{indent}while ({node_label}) {{\n"
+                    
+                    true_edge = None
+                    false_edge = None
+                    for edge in neighbors:
+                        if edge['label'].lower() == 'true':
+                            true_edge = edge
+                        elif edge['label'].lower() == 'false':
+                            false_edge = edge
+                    
+                    if true_edge:
+                        body_node_id = true_edge['target']
+                        while body_node_id and body_node_id != node['id']:
+                            body_node = get_node(body_node_id)
+                            if body_node:
+                                code += format_statement(body_node.get('data', {}).get('label', ''), 2)
+                            
+                            body_neighbors = adj.get(body_node_id, [])
+                            body_node_id = body_neighbors[0]['target'] if body_neighbors else None
+                    
+                    code += f"{indent}}}\n"
+                    current_node_id = false_edge['target'] if false_edge else None
+                
+                else:
+                    # Handle if-else
+                    merge_node_id = find_merge_node(node['id'], adj, edges)
+                    indent = '  '
+                    code += f"{indent}if ({node_label}) {{\n"
+                    
+                    # Process true branch
+                    true_edge = None
+                    false_edge = None
+                    for edge in neighbors:
+                        if edge['label'].lower() == 'true':
+                            true_edge = edge
+                        elif edge['label'].lower() == 'false':
+                            false_edge = edge
+                    
+                    if true_edge:
+                        current_in_true_branch = true_edge['target']
+                        while current_in_true_branch and current_in_true_branch != merge_node_id:
+                            branch_node = get_node(current_in_true_branch)
+                            if branch_node:
+                                code += format_statement(branch_node.get('data', {}).get('label', ''), 2)
+                            
+                            branch_neighbors = adj.get(current_in_true_branch, [])
+                            current_in_true_branch = branch_neighbors[0]['target'] if branch_neighbors else None
+                    
+                    code += f"{indent}}}\n"
+                    
+                    # Process false branch
+                    if false_edge:
+                        code += f"{indent}else {{\n"
+                        current_in_false_branch = false_edge['target']
+                        while current_in_false_branch and current_in_false_branch != merge_node_id:
+                            branch_node = get_node(current_in_false_branch)
+                            if branch_node:
+                                code += format_statement(branch_node.get('data', {}).get('label', ''), 2)
+                            
+                            branch_neighbors = adj.get(current_in_false_branch, [])
+                            current_in_false_branch = branch_neighbors[0]['target'] if branch_neighbors else None
+                        
+                        code += f"{indent}}}\n"
+                    
+                    current_node_id = merge_node_id
+            
+            else:
+                break
+        
+        code += '\n  return 0;\n}'
+        
+        return JsonResponse({'code': code})
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
 def generate_flowchart(request):
     global node_id_counter
     if request.method != 'POST':

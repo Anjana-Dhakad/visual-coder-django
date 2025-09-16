@@ -4,6 +4,7 @@ __pycache__/
 db.sqlite3
 /vendor/
 .env
+staticfiles/
 
 # Node.js / React specific
 # (Notice the '/frontend/' prefix to target the frontend folder)

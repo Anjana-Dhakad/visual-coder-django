@@ -30,7 +30,10 @@ urlpatterns = [
     # toh request ko 'api.urls' file ke paas bhej do.
     path('api/', include('api.urls')),
 
-    # 3. React App ka URL (Catch-all)
+    # 3. Flowchart to Code page
+    path('flowchart-to-code/', TemplateView.as_view(template_name='flowchart-to-code.html'), name='flowchart_to_code'),
+
+    # 4. React App ka URL (Catch-all)
     # Yeh line sabse aakhir mein aati hai.
     # Iska matlab hai ki agar URL upar kisi se match nahi hota,
     # toh use React app (index.html) ke paas bhej do.
