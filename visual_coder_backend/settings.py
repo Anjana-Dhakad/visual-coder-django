@@ -3,6 +3,10 @@
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv  # <-- Yeh line add karein
+
+load_dotenv()  # <-- Yeh line add karein
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,10 +44,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'visual_coder_backend.urls'
 
+# visual_coder_backend/settings.py
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates'  # Yeh line add ya update karein
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -88,3 +96,12 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# visual_coder_backend/settings.py
+
+STATIC_URL = '/static/'
+
+# Django ko batayein ki aapka static folder kahan hai
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]

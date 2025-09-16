@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code to Flowchart</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="page-container">
+        <!-- Left Side: Code Input -->
+        <div class="panel left-panel">
+            <div class="panel-header">
+                <a href="/" class="back-button">&larr; Back to Home</a>
+                <h2>C Code Input</h2>
+            </div>
+            <textarea id="code-input" placeholder="#include <stdio.h>&#10;&#10;int main() {&#10;    // Write your C code here&#10;    return 0;&#10;}"></textarea>
+            <button id="generate-btn">Generate Flowchart</button>
+        </div>
+
+        <!-- Right Side: Flowchart Output -->
+        <div class="panel right-panel">
+            <div class="panel-header">
+                <h2>Generated Flowchart</h2>
+            </div>
+            <div id="flowchart-output">
+                <p class="placeholder-text">Your flowchart will appear here...</p>
+            </div>
+            <div id="loading-spinner" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- Mermaid.js Library for drawing flowcharts -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        // Initialize Mermaid.js
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    
+    <!-- Aapki custom JS file -->
+    <script src="{% static 'js/flowchart.js' %}"></script>
+</body>
+</html>
