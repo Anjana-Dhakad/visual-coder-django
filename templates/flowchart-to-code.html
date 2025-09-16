@@ -1,0 +1,339 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowchart to Code</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #1e1f26;
+            --bg-med: #282a36;
+            --bg-light: #343746;
+            --text-light: #f8f8f2;
+            --accent-green: #50fa7b;
+            --accent-red: #ff5555;
+            --accent-blue: #8be9fd;
+            --accent-purple: #bd93f9;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container { display: flex; flex: 1; }
+        .sidebar, .code-panel {
+            background-color: var(--bg-med);
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            z-index: 2;
+        }
+        .sidebar { width: 220px; }
+        .code-panel { width: 380px; }
+        h2 {
+            text-align: center;
+            color: var(--accent-purple);
+            border-bottom: 2px solid var(--bg-light);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .node-item {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            cursor: grab;
+            text-align: center;
+            font-weight: bold;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .node-item:hover {
+            background-color: #44475a;
+            transform: translateY(-2px);
+        }
+        .drawflow-container { flex: 1; position: relative; }
+        #drawflow {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            background-image: radial-gradient(var(--bg-light) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .drawflow-node {
+            background: var(--bg-med) !important;
+            border: none !important;
+            border-radius: 0 !important;
+            min-width: 150px !important; /* Smaller node size */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .drawflow-node .title-box { display: none; }
+        .drawflow-node .box { padding: 0 !important; }
+        .drawflow-node input[type="text"] {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            text-align: center;
+            padding: 15px 10px; /* Reduced padding */
+            box-sizing: border-box;
+            font-size: 13px; /* Smaller font */
+        }
+        .drawflow-node.start-end {
+            background: var(--accent-green) !important;
+            color: var(--bg-dark) !important;
+            border-radius: 50px !important;
+        }
+        .drawflow-node.start-end input { color: var(--bg-dark) !important; font-weight: bold; }
+        
+        .drawflow-node.io {
+            clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
+            background: var(--accent-blue) !important;
+            color: var(--bg-dark) !important;
+        }
+        .drawflow-node.io input { color: var(--bg-dark) !important; font-weight: bold; }
+
+        .drawflow-node.decision {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            background: var(--accent-red) !important;
+            color: var(--bg-dark) !important;
+            padding: 5px;
+        }
+        .drawflow-node.decision input { color: var(--bg-dark) !important; font-weight: bold; }
+        
+        .drawflow-node .input, .drawflow-node .output {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border: 2px solid var(--accent-purple);
+            border-radius: 50%;
+            cursor: crosshair;
+            z-index: 10 !important;
+            transform: translate(-50%, -50%);
+        }
+        .drawflow-node .input { top: 50%; left: 0; }
+        .drawflow-node.start-end .output { left: 100%; top: 50%; }
+        .drawflow-node.io .input { left: 7.5%; }
+        .drawflow-node.io .output { left: 92.5%; top: 50%; }
+        .drawflow-node.decision .input { left: 0; top: 50%; }
+        .drawflow-node.decision .output.output_1 { top: 50%; left: 100%; }
+        .drawflow-node.decision .output.output_2 { top: 100%; left: 50%; }
+
+        /* Thinner connection lines */
+        .drawflow-connection .main-path {
+            stroke-width: 2px !important;
+            stroke: var(--accent-blue);
+        }
+        
+        /* True/False Labels */
+        .drawflow-connection-label {
+            background: var(--bg-dark);
+            color: var(--accent-green);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .drawflow-connection-label.false {
+            color: var(--accent-red);
+        }
+
+        textarea#code-output {
+            flex-grow: 1;
+            background: #1c1d22;
+            border: 1px solid var(--bg-light);
+            color: #f8f8f2;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            resize: none;
+        }
+        .btn {
+            background-color: var(--accent-green);
+            color: var(--bg-med);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .btn-clear { background-color: var(--accent-red); }
+        .btn:hover { filter: brightness(1.2); }
+        .back-link {
+            position: absolute; top: 20px; left: 20px;
+            color: var(--text-light); text-decoration: none;
+            z-index: 10; background: var(--bg-light);
+            padding: 10px 15px; border-radius: 8px;
+        }
+        .back-link:hover { background: #44475a; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Nodes</h2>
+            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="startEnd">Start / End</div>
+            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="io">I/O</div>
+            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="decision">Decision</div>
+            <button class="btn btn-clear" onclick="editor.clearModuleData('Home')">Clear Canvas</button>
+        </div>
+
+        <div class="drawflow-container">
+            <a href="{% url 'home' %}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+            <div id="drawflow" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        </div>
+
+        <div class="code-panel">
+            <h2>Generated Code</h2>
+            <textarea id="code-output" readonly>// Create a flowchart and click "Generate Code"</textarea>
+            <button class="btn" onclick="generateCode()">Generate Code</button>
+        </div>
+    </div>
+
+    <script>
+        const id = document.getElementById("drawflow");
+        const editor = new Drawflow(id);
+        editor.reroute = true; // Makes lines look cleaner
+        editor.start();
+
+        editor.on('connectionCreated', function(info) {
+            const sourceNode = editor.getNodeFromId(info.output_id);
+            if (sourceNode.name === 'decision') {
+                let type = '';
+                while (type !== 'true' && type !== 'false') {
+                    type = prompt("Is this the 'true' or 'false' path? (type 'true' or 'false')");
+                    if (type) type = type.toLowerCase();
+                }
+                const label = `<div class='drawflow-connection-label ${type}'>${type}</div>`;
+                editor.addConnectionLabel(info.output_id, info.input_id, label);
+            }
+        });
+
+        function addNodeToDrawFlow(name, inputs, outputs, classname, pos_x, pos_y) {
+            const nodeContent = `<div class="box"><input type="text" df-text placeholder="Enter text..."></div>`;
+            editor.addNode(name, inputs, outputs, pos_x, pos_y, classname, { 'text': '' }, nodeContent);
+        }
+
+        function drag(ev) { ev.dataTransfer.setData("node", ev.target.getAttribute('data-node')); }
+        function drop(ev) {
+            ev.preventDefault();
+            const nodeType = ev.dataTransfer.getData("node");
+            const pos_x = ev.clientX * (editor.precanvas.clientWidth / (editor.precanvas.clientWidth * editor.zoom)) - (editor.precanvas.getBoundingClientRect().x * (editor.precanvas.clientWidth / (editor.precanvas.clientWidth * editor.zoom)));
+            const pos_y = ev.clientY * (editor.precanvas.clientHeight / (editor.precanvas.clientHeight * editor.zoom)) - (editor.precanvas.getBoundingClientRect().y * (editor.precanvas.clientHeight / (editor.precanvas.clientHeight * editor.zoom)));
+
+            switch (nodeType) {
+                case 'startEnd': addNodeToDrawFlow('start-end', 0, 1, 'start-end', pos_x, pos_y); break;
+                case 'io': addNodeToDrawFlow('io', 1, 1, 'io', pos_x, pos_y); break;
+                case 'decision': addNodeToDrawFlow('decision', 1, 2, 'decision', pos_x, pos_y); break;
+            }
+        }
+        function allowDrop(ev) { ev.preventDefault(); }
+
+        function generateCode() {
+            const output = document.getElementById('code-output');
+            const exportData = editor.export().drawflow.Home.data;
+            
+            if (Object.keys(exportData).length === 0) {
+                output.value = "// Please create a flowchart first.";
+                return;
+            }
+
+            const format = (text, indent) => {
+                const trimmed = text.trim();
+                if (!trimmed) return "";
+                const indentation = '    '.repeat(indent);
+                return indentation + (trimmed.endsWith(';') || trimmed.endsWith('{') || trimmed.endsWith('}') ? trimmed : trimmed + ';') + '\n';
+            };
+            
+            const startNode = Object.values(exportData).find(n => n.name === 'start-end' && n.data.text.toLowerCase() === 'start');
+            if (!startNode) {
+                output.value = "// ERROR: 'Start' node not found.";
+                return;
+            }
+
+            let code = "#include <stdio.h>\n#include <stdbool.h>\n\nint main() {\n";
+            const visited = new Set();
+            const pathEnds = new Map();
+
+            function findNextNode(nodeId, outputPort = 'output_1') {
+                const node = exportData[nodeId];
+                if (node && node.outputs[outputPort] && node.outputs[outputPort].connections.length > 0) {
+                    const nextNodeId = node.outputs[outputPort].connections[0].node;
+                    return exportData[nextNodeId];
+                }
+                return null;
+            }
+
+            function traverse(node, indent) {
+                let currentNode = node;
+                while(currentNode && !visited.has(currentNode.id)) {
+                    visited.add(currentNode.id);
+                    
+                    if (currentNode.name === 'start-end' && currentNode.data.text.toLowerCase() === 'end') {
+                        return null; // End of path
+                    }
+                    
+                    if (currentNode.name === 'io') {
+                        code += format(currentNode.data.text, indent);
+                        currentNode = findNextNode(currentNode.id);
+                        continue;
+                    }
+
+                    if (currentNode.name === 'decision') {
+                        code += format(`if (${currentNode.data.text}) {`, indent);
+                        
+                        let trueNode = null, falseNode = null;
+                        const allConnections = [...(currentNode.outputs.output_1.connections || []), ...(currentNode.outputs.output_2.connections || [])];
+
+                        for (const conn of allConnections) {
+                            if (conn.label) {
+                                if (conn.label.includes('true')) trueNode = exportData[conn.node];
+                                if (conn.label.includes('false')) falseNode = exportData[conn.node];
+                            }
+                        }
+
+                        let truePathEndNode = trueNode ? traverse(trueNode, indent + 1) : null;
+                        code += format('}', indent);
+
+                        let falsePathEndNode = null;
+                        if (falseNode) {
+                            code += format('else {', indent);
+                            falsePathEndNode = traverse(falseNode, indent + 1);
+                            code += format('}', indent);
+                        }
+
+                        let mergeNode = null;
+                        if (truePathEndNode) mergeNode = findNextNode(truePathEndNode.id);
+                        if (!mergeNode && falsePathEndNode) mergeNode = findNextNode(falsePathEndNode.id);
+
+                        currentNode = mergeNode;
+                        continue;
+                    }
+                    
+                    currentNode = findNextNode(currentNode.id);
+                }
+                return currentNode;
+            }
+
+            traverse(startNode, 1);
+
+            code += "\n    return 0;\n}";
+            output.value = code;
+        }
+    </script>
+</body>
+</html>
