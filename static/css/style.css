@@ -1,0 +1,366 @@
+body {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+.container {
+    max-width: 800px;
+    padding: 20px;
+}
+
+header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.2rem;
+    color: #a0a0a0;
+    margin-bottom: 40px;
+}
+
+.options-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.option-card {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 25px;
+    width: 300px;
+    text-decoration: none;
+    color: #d4d4d4;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.option-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.option-card h2 {
+    font-size: 1.5rem;
+    margin-top: 0;
+    color: #5dadec; /* A nice blue color */
+}
+
+.option-card p {
+    font-size: 1rem;
+    color: #a0a0a0;
+}
+
+.disabled-card {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.disabled-card:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.disabled-card span {
+    display: block;
+    margin-top: 10px;
+    color: #ffc107;
+    font-weight: 500;
+}
+
+/* --- Code-to-Flowchart Page Styles --- */
+
+.page-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+}
+
+.panel {
+    height: 100%;
+    padding: 25px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.left-panel {
+    width: 40%;
+    background-color: #1a1a1a;
+    border-right: 1px solid #444;
+}
+
+.right-panel {
+    width: 60%;
+    background-color: #1e1e1e;
+    align-items: center; /* Center horizontally */
+    justify-content: center; /* Center vertically */
+}
+
+.panel-header {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.panel-header h2 {
+    margin: 0;
+    text-align: center;
+    color: #5dadec;
+}
+
+.back-button {
+    color: #a0a0a0;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.back-button:hover {
+    color: #fff;
+}
+
+#code-input {
+    width: 100%;
+    flex-grow: 1; /* Take available space */
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #d4d4d4;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    padding: 15px;
+    box-sizing: border-box;
+    resize: none;
+}
+
+#generate-btn {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px;
+    background-color: #007acc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#generate-btn:hover {
+    background-color: #005f9e;
+}
+
+#flowchart-output {
+    width: 90%;
+    height: 90%;
+    background-color: #252526;
+    border: 1px solid #444;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto; /* Add scrollbars if flowchart is big */
+}
+
+.placeholder-text {
+    color: #a0a0a0;
+    font-size: 1.2rem;
+}
+
+/* For Mermaid.js SVG */
+#flowchart-output .mermaid svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* --- Flowchart-to-Code Page Styles --- */
+
+.node-palette {
+    width: 20%; /* Sidebar for nodes */
+    padding: 15px;
+}
+
+#drawflow {
+    width: 55%;
+    height: 100%;
+    background: #2d2d2d;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 20px 20px;
+    position: relative;
+}
+
+.code-output-panel {
+    width: 25%;
+}
+
+.nodes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.drawflow-node-item {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: grab;
+    text-align: center;
+}
+
+.node-preview {
+    padding: 15px 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.node-preview.start { background-color: #28a745; border-radius: 25px; }
+.node-preview.io { background-color: #007bff; transform: skewX(-20deg); }
+.node-preview.decision { 
+    background-color: #dc3545; 
+    width: 40px; height: 40px;
+    line-height: 40px;
+    margin: 5px auto;
+    transform: rotate(45deg);
+}
+.node-preview.decision span { transform: rotate(-45deg); display: block; } /* Counter-rotate text */
+
+
+#code-output {
+    width: 100%;
+    flex-grow: 1;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #d4d4d4;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    padding: 15px;
+    box-sizing: border-box;
+    resize: none;
+}
+
+#generate-code-btn, #clear-btn {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#generate-code-btn { background-color: #28a745; }
+#generate-code-btn:hover { background-color: #218838; }
+
+#clear-btn { background-color: #dc3545; }
+#clear-btn:hover { background-color: #c82333; }
+
+/* Custom styles for nodes inside Drawflow */
+.drawflow-node .input, .drawflow-node .output {
+    background: #5dadec;
+}
+
+
+/* --- Drawflow Node Styling Fixes --- */
+
+/* General style for all nodes on the canvas */
+.drawflow-node {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 8px;
+    width: 200px; /* Default width */
+    min-height: 50px;
+    color: white;
+}
+
+.drawflow-node .drawflow_content_node {
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.drawflow-node .title-box {
+    background: #1e1e1e;
+    color: #5dadec;
+    padding: 8px;
+    border-bottom: 1px solid #444;
+}
+
+.drawflow-node .box {
+    padding: 15px;
+}
+
+/* For resizing functionality */
+.drawflow-node .box {
+    resize: both; /* Enable resizing */
+    overflow: auto; /* Show scrollbars if content overflows */
+    min-width: 180px; /* Minimum size */
+    min-height: 40px;
+}
+
+
+/* --- Custom Shapes for Nodes on Canvas --- */
+
+/* Start/End Node */
+.drawflow-node.start {
+    background-color: #28a745;
+    border-radius: 40px; /* Make it a stadium shape */
+}
+.drawflow-node.start .title-box {
+    background: transparent;
+    border-bottom: none;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+/* Input/Output Node */
+.drawflow-node.io {
+    background-color: #007bff;
+    transform: skewX(-20deg); /* Skew the shape */
+}
+/* Counter-skew the content so text is not skewed */
+.drawflow-node.io .drawflow_content_node {
+    transform: skewX(20deg);
+}
+
+/* Decision Node */
+.drawflow-node.decision {
+    background-color: #dc3545;
+    transform: rotate(45deg); /* Rotate the shape */
+    width: 150px;
+    height: 150px;
+}
+/* Counter-rotate the content */
+.drawflow-node.decision .drawflow_content_node {
+    transform: rotate(-45deg);
+}
+.drawflow-node.decision .title-box {
+    height: 100%; /* Make title take full height for centering */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.drawflow-node.decision .box {
+    display: none; /* Hide the input box for decision, title is enough */
+}
