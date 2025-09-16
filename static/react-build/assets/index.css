@@ -1,0 +1,44 @@
+/* React Flow styles */
+.react-flow__node { border-radius: 8px; font-size: 12px; border: 1px solid #1a1d2d; background: #282b3a; color: #f8f8f8; }
+.react-flow__node.selected { box-shadow: 0 0 0 1px #1a1d2d, 0 0 0 3px #6e61e8; }
+.react-flow__edge-path { stroke: #6e61e8; stroke-width: 2; }
+.react-flow__edge.selected .react-flow__edge-path { stroke: #8b7ef0; }
+.react-flow__controls button { background-color: #282b3a; border-bottom: 1px solid #1a1d2d; }
+.react-flow__controls button:hover { background-color: #34384c; }
+.react-flow__edge-text { font-size: 10px; fill: #b1b1b7; }
+
+/* General App Layout */
+body { background-color: #1e1e1e; color: #f8f8f8; font-family: sans-serif; margin: 0; }
+.app-container { display: flex; height: 100vh; width: 100vw; }
+.back-link { position: absolute; top: 15px; left: 270px; z-index: 10; color: #b1b1b7; text-decoration: none; background: #282b3a; padding: 8px 12px; border-radius: 8px; }
+.back-link:hover { color: white; }
+.reactflow-wrapper { flex-grow: 1; height: 100%; }
+
+/* Sidebar */
+.sidebar { width: 250px; background: #1a1d2d; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+.sidebar-title { font-size: 1.2em; text-align: center; margin-bottom: 10px; }
+.sidebar-node-item { padding: 10px; border: 1px solid #4b5263; border-radius: 8px; cursor: grab; background: #282b3a; text-align: center; }
+.sidebar-node-item:active { cursor: grabbing; }
+.sidebar-node-item .node-preview { padding: 12px 8px; border-radius: 5px; margin-bottom: 5px; color: white; font-weight: bold; }
+.node-preview.start { background-color: #28a745; border-radius: 25px; }
+.node-preview.io { background-color: #007bff; transform: skewX(-20deg); }
+.node-preview.decision { background-color: #dc3545; width: 30px; height: 30px; line-height: 30px; margin: 5px auto; transform: rotate(45deg); }
+.node-preview.decision span { transform: rotate(-45deg); display: block; }
+.node-preview.forLoop { background-color: #6f42c1; transform: perspective(10px) rotateX(5deg); }
+.sidebar .clear-button { margin-top: auto; background: #dc3545; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
+.sidebar .clear-button:hover { background: #c82333; }
+
+/* Code Panel */
+.code-panel { width: 350px; background: #1a1d2d; padding: 15px; display: flex; flex-direction: column; }
+.code-panel h3 { text-align: center; margin-top: 0; }
+.code-panel textarea { flex-grow: 1; background: #282b3a; border: 1px solid #4b5263; border-radius: 8px; color: #f8f8f8; font-family: 'Courier New', monospace; font-size: 0.9em; padding: 10px; resize: none; }
+.code-panel .generate-button { margin-top: 15px; background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
+.code-panel .generate-button:hover { background: #218838; }
+
+/* Custom Nodes on Canvas */
+.react-flow__node-startEnd .wrapper { background: #28a745; border-radius: 20px; padding: 10px 20px; text-align: center; }
+.react-flow__node-inputOutput .wrapper { background: #007bff; padding: 10px; transform: skewX(-20deg); }
+.react-flow__node-inputOutput .wrapper div { transform: skewX(20deg); text-align: center; }
+.react-flow__node-decision .wrapper { background: #dc3545; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; transform: rotate(45deg); }
+.react-flow__node-decision .wrapper div { transform: rotate(-45deg); text-align: center; max-width: 90%; }
+.react-flow__node-forLoop .wrapper { background: #6f42c1; padding: 10px; border-radius: 4px; text-align: center; }
