@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Coder</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Visual Coder</h1>
+            <p>Choose an option to get started</p>
+        </header>
+        <main class="options-container">
+           <a href="/flowchart-to-code" class="option-card">
+    <h2>Flowchart to Code</h2>
+    <p>Create a flowchart by dragging and dropping nodes, and generate C code from it.</p>
+</a>
+            <a href="/code-to-flowchart" class="option-card">
+                <h2>Code to Flowchart</h2>
+                <p>Write C code and automatically generate a visual flowchart from it.</p>
+            </a>
+        </main>
+    </div>
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
